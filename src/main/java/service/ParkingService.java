@@ -26,19 +26,19 @@ public class ParkingService {
         if (parking == null) {
             throw new ParkingLotFullException(" 非常抱歉，由于车位已满，暂时无法为您停车！");
         }
-
-        parkingRepository.updateCarNumber(parking.getLotNumber(), parking.getSpaceNumber(), carNumber);
+        parking.setCarNumber(carNumber);
+        parkingRepository.updateCarNumber(parking);
         return String.format("%s,%d,%s", parking.getLotNumber(), parking.getSpaceNumber(), carNumber);
     }
 
-    public String fetchInfo(String lotNo, int spaceNo, String carNumber) {
+    public String fetchInfo(Parking parking) {
 
-        boolean isValid = parkingRepository.querybyTicket(lotNo, spaceNo, carNumber);
+        boolean isValid = parkingRepository.querybyTicket(parking);
         if (!isValid) {
             throw new InvalidTicketException("很抱歉，无法通过您提供的停车券为您找到相应的车辆，请您再次核对停车券是否有效！ ");
         }
-        parkingRepository.deleteByTicket(lotNo, spaceNo, carNumber);
-        return carNumber;
+        parkingRepository.updateCarNumberSetNull(parking);
+        return parking.getCarNumber();
     }
 
     public void closeConnection() {

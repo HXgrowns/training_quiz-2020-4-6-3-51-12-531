@@ -1,8 +1,10 @@
-import checkUtils.Check;
+import entity.Parking;
 import exception.InvalidTicketException;
 import service.ParkingService;
 
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Application {
     private static ParkingService parkingService = new ParkingService();
@@ -20,8 +22,13 @@ public class Application {
                 System.out.println("系统已退出");
                 break;
             }
-            handle(choice);
+            try {
+                handle(choice);
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
         }
+        parkingService.closeConnection();
     }
 
     private static void handle(String choice) {
@@ -42,20 +49,20 @@ public class Application {
             String car = fetch(ticket);
             System.out.format("已为您取到车牌号为%s的车辆，很高兴为您服务，祝您生活愉快!\n", car);
         }
-        parkingService.closeConnection();
     }
 
     public static void init(String initInfo) {
-        if (!Check.isRightInitInfo(initInfo)) {
-            System.out.println("输入错误，请重新输入");
+        Pattern pattern = Pattern.compile("^A:(\\d+),B:(\\d+)$");
+        Matcher matcher = pattern.matcher(initInfo);
+        if (matcher.find()) {
+            int aParkingCount = Integer.parseInt(matcher.group(1));
+            int bParkingCount = Integer.parseInt(matcher.group(2));
+            parkingService.insertParkingInfo(aParkingCount, bParkingCount);
+            System.out.println("初始化成功");
             return;
         }
-        int aParkingCount = initInfo.trim().charAt(2) - '0';
-        int bParkingCount = initInfo.trim().charAt(6) - '0';
-        parkingService.insertParkingInfo(aParkingCount, bParkingCount);
-        System.out.println("初始化成功");
+        System.out.println("输入错误，请重新输入");
     }
-
 
     public static String park(String carNumber) {
         return parkingService.generateParkingTicket(carNumber);
@@ -64,7 +71,7 @@ public class Application {
     public static String fetch(String ticket) {
         String[] ticketDetails = ticket.split(",");
         try {
-            return parkingService.fetchInfo(ticketDetails[0], Integer.parseInt(ticketDetails[1]), ticketDetails[2]);
+            return parkingService.fetchInfo(new Parking(ticketDetails[0], Integer.parseInt(ticketDetails[1]), ticketDetails[2]));
         } catch (Exception e) {
             throw new InvalidTicketException("很抱歉，无法通过您提供的停车券为您找到相应的车辆，请您再次核对停车券是否有效！ ");
         }

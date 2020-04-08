@@ -10,7 +10,7 @@ public class ParkingRepository {
     public ParkingRepository() {
         try {
             this.connection = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/parking_lot?useUnicode=true&characterEncoding=utf-8&serverTimezone=Hongkong",
+                    "jdbc:mysql://localhost:3306/parking_manage?useUnicode=true&characterEncoding=utf-8&serverTimezone=Hongkong",
                     "root", "root");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -22,18 +22,6 @@ public class ParkingRepository {
             Statement statement = this.connection.createStatement();
             String deleteSql = "DELETE FROM parking_lot";
             statement.execute(deleteSql);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void deleteByTicket(String lotNo, int spaceNo, String carNumber) {
-        String querySql = "DELETE FROM parking_lot WHERE lot_no = ? AND space_no = ? AND car_number = ?";
-        try (PreparedStatement preparedStatement = this.connection.prepareStatement(querySql)) {
-            preparedStatement.setString(1, lotNo);
-            preparedStatement.setInt(2, spaceNo);
-            preparedStatement.setString(3, carNumber);
-            preparedStatement.execute();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -64,12 +52,12 @@ public class ParkingRepository {
         return null;
     }
 
-    public boolean querybyTicket(String lotNo, int spaceNo, String carNumber) {
-        String querySql = "SELECT * FROM parking_lot WHERE lot_no = ? AND space_no = ? And car_number = ?";
+    public boolean querybyTicket(Parking parking) {
+        String querySql = "SELECT id FROM parking_lot WHERE lot_no = ? AND space_no = ? And car_number = ?";
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(querySql)) {
-            preparedStatement.setString(1, lotNo);
-            preparedStatement.setInt(2, spaceNo);
-            preparedStatement.setString(3, carNumber);
+            preparedStatement.setString(1, parking.getLotNumber());
+            preparedStatement.setInt(2, parking.getSpaceNumber());
+            preparedStatement.setString(3, parking.getCarNumber());
             if (preparedStatement.executeQuery().next()) {
                 return true;
             }
@@ -79,12 +67,24 @@ public class ParkingRepository {
         return false;
     }
 
-    public void updateCarNumber(String lotNo, int spaceNo, String carNumber) {
+    public void updateCarNumber(Parking parking) {
         String updateSql = "UPDATE parking_lot SET car_number = ? WHERE lot_no = ? AND space_no = ?";
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(updateSql)) {
-            preparedStatement.setString(1, carNumber);
-            preparedStatement.setString(2, lotNo);
-            preparedStatement.setInt(3, spaceNo);
+            preparedStatement.setString(1, parking.getCarNumber());
+            preparedStatement.setString(2, parking.getLotNumber());
+            preparedStatement.setInt(3, parking.getSpaceNumber());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateCarNumberSetNull(Parking parking) {
+        String querySql = "UPDATE parking_lot SET car_number = NULL WHERE lot_no = ? AND space_no = ? AND car_number = ?";
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(querySql)) {
+            preparedStatement.setString(1, parking.getLotNumber());
+            preparedStatement.setInt(2, parking.getSpaceNumber());
+            preparedStatement.setString(3, parking.getCarNumber());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

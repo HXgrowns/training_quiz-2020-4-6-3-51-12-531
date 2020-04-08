@@ -1,4 +1,4 @@
-CREATE DATABASE parking_lot DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE parking_manage DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE parking_lot (
 id INT(10) PRIMARY KEY AUTO_INCREMENT,
