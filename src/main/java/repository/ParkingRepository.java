@@ -3,6 +3,8 @@ package repository;
 import entity.Parking;
 
 import java.sql.*;
+import java.util.Random;
+import java.util.stream.IntStream;
 
 public class ParkingRepository {
     private Connection connection;
@@ -43,6 +45,19 @@ public class ParkingRepository {
         try (Statement statement = this.connection.createStatement()) {
             String querySql = "SELECT lot_no, space_no FROM parking_lot WHERE car_number is NULL ORDER BY lot_no, space_no ASC LIMIT 1";
             ResultSet resultSet = statement.executeQuery(querySql);
+            if (resultSet.next()) {
+                return new Parking(resultSet.getString("lot_no"), resultSet.getInt("space_no"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Parking queryMostLotMinNumberParking() {
+        try (Statement statement = this.connection.createStatement()) {
+            String queryMostLot = "SELECT lot_no, space_no, COUNT(space_no) AS space_no_count FROM parking_lot WHERE car_number is NULL GROUP BY lot_no ORDER BY space_no_count DESC, space_no ASC LIMIT 1";
+            ResultSet resultSet = statement.executeQuery(queryMostLot);
             if (resultSet.next()) {
                 return new Parking(resultSet.getString("lot_no"), resultSet.getInt("space_no"));
             }
